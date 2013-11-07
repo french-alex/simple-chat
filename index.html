@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Webchat example</title>
+</head>
+<body>
+<div id="container">
+    <header>
+        <h1>A simple chat with AJAX & Node.js for Supinfo 3WEB</h1>
+    </header>
+
+    <section>
+        <fieldset>
+            <legend>Post your message</legend>
+
+            <form action="." method="get" id="post-message">
+                <p><label>Username <input type="text" name="username"/></label></p>
+
+                <p><label>Message <input type="text" name="message"/></label></p>
+
+                <p><input type="submit" value="Post"/></p>
+            </form>
+        </fieldset>
+
+        <div id="messages"></div>
+    </section>
+</div>
+
+<script type="text/javascript">
+    var url = ".";
+    var async = true;
+    var listContainer = document.getElementById("messages");
+    var messageForm = document.querySelector('form#post-message');
+    var postLink = document.querySelector('form#post-message input[type=submit]');
+    var username = document.querySelector("input[name=username]");
+    var message = document.querySelector("input[name=message]");
+
+    // XHR init
+    var xhr = null;
+    if (window.XMLHttpRequest) {
+        xhr = new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        // code for IE6, IE5
+        xhr = new ActiveXObject("Microsoft.XMLHTTP");
+    } else {
+        alert('Perhaps your browser does not support XMLHttpRequest?');
+    }
+
+    var getMessages = function () {
+        xhr.open('GET', url + "/messages", async);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.send(null);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) { // success
+                var result = xhr.responseText;
+                var messages = JSON.parse(result);
+
+                listContainer.innerHTML = ""; // clear the list
+
+                for (var i = 0; i < messages.length; i++) {
+                    var listItem = document.createElement("p");
+                    listItem.innerText = messages[i].username + ": " + messages[i].message;
+
+                    listContainer.appendChild(listItem);
+                }
+            }
+        };
+    };
+
+    var addMessage = function (event) {
+        event.preventDefault();
+
+        xhr.open('POST', url + "/messages", async);
+        xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
+        xhr.send("{'username': '"+ username.value +"', 'message': '"+ message.value +"'}");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) { // success
+                message.value = "";
+            }
+        };
+    };
+
+    postLink.addEventListener('click', addMessage);
+    window.setInterval(getMessages, 1000);
+</script>
+</body>
+</html>
