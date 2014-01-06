@@ -5,8 +5,11 @@ var messages = [{'username': 'Lucas Courot', 'message': 'Hello world!'}];
 var http = require('http');
 var url  = require('url');
 var fs   = require('fs');
+var SSE  = require('sse');
+var EventEmitter  = require('events').EventEmitter;
+var eventEmitter = new EventEmitter();
 
-http.createServer(function (request, response) {
+var server = http.createServer(function (request, response) {
     var path = url.parse(request.url).pathname;
 
     // The homepage
@@ -33,6 +36,8 @@ http.createServer(function (request, response) {
             request.on('end', function () {
                 var newMessage = eval('(' + requestBody + ')');
                 messages.unshift(newMessage);
+
+                eventEmitter.emit('sendToClients', newMessage);
             });
 
             response.write("{'errors':'Message added'}");
@@ -49,5 +54,16 @@ http.createServer(function (request, response) {
         response.end('Not found.');
     }
 }).listen(port);
+
+
+server.listen(8080, '127.0.0.1', function() {
+    var sse = new SSE(server);
+    sse.on('connection', function(client) {
+        eventEmitter.on('sendToClients', function (message) {
+            console.log(message);
+            client.send(JSON.stringify(messages));
+        });
+    });
+});
 
 console.log('Server running on port ' + port);

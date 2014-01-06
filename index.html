@@ -47,26 +47,17 @@
         alert('Perhaps your browser does not support XMLHttpRequest?');
     }
 
-    var getMessages = function () {
-        xhr.open('GET', url + "/messages", async);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Accept', 'application/json');
-        xhr.send(null);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) { // success
-                var result = xhr.responseText;
-                var messages = JSON.parse(result);
+    var getMessages = function (result) {
+        var messages = JSON.parse(result);
 
-                listContainer.innerHTML = ""; // clear the list
+        listContainer.innerHTML = ""; // clear the list
 
-                for (var i = 0; i < messages.length; i++) {
-                    var listItem = document.createElement("p");
-                    listItem.innerText = messages[i].username + ": " + messages[i].message;
+        for (var i = 0; i < messages.length; i++) {
+            var listItem = document.createElement("p");
+            listItem.innerText = messages[i].username + ": " + messages[i].message;
 
-                    listContainer.appendChild(listItem);
-                }
-            }
-        };
+            listContainer.appendChild(listItem);
+        }
     };
 
     var addMessage = function (event) {
@@ -83,7 +74,11 @@
     };
 
     postLink.addEventListener('click', addMessage);
-    window.setInterval(getMessages, 1000);
+
+    var es = new EventSource("/sse");
+    es.onmessage = function (event) {
+        getMessages(event.data);
+    };
 </script>
 </body>
 </html>
