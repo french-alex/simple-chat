@@ -49,21 +49,19 @@ var server = http.createServer(function (request, response) {
         }
 
         response.end();
-    } else {
-        response.writeHead(404, { 'Content-Type': 'text/html' });
-        response.end('Not found.');
-    }
-}).listen(port);
-
-
-server.listen(8080, '127.0.0.1', function() {
-    var sse = new SSE(server);
-    sse.on('connection', function(client) {
-        eventEmitter.on('sendToClients', function (message) {
-            console.log(message);
-            client.send(JSON.stringify(messages));
+    } else if (path == '/sse') { // SSE
+        var sse = new SSE(server);
+        sse.on('connection', function(client) {
+            eventEmitter.on('sendToClients', function (message) {
+                console.log(message);
+                client.send(JSON.stringify(messages));
+            });
         });
-    });
-});
+    }
+    else {
+            response.writeHead(404, { 'Content-Type': 'text/html' });
+            response.end('Not found.');
+        }
+}).listen(port);
 
 console.log('Server running on port ' + port);
