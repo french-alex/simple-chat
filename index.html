@@ -9,6 +9,13 @@
             width: 600px;
             margin: auto;
         }
+        h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+        #messages {
+            font-family: Consolas, Courier, sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -21,9 +28,10 @@
         <fieldset>
             <legend>Post your message</legend>
 
+            <p><span id="nb-clients"></span> online clients.</p>
             <form action="." method="get" id="post-message">
                 <p><label>Username <input type="text" name="username" value="Guest"/></label></p>
-                <p><label>Message <input type="text" name="message"/></label></p>
+                <p><textarea name="message" id="message" cols="50" rows="3"></textarea></p>
                 <p><input type="submit" value="Post"/></p>
             </form>
         </fieldset>
@@ -34,11 +42,12 @@
 
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
-    var listContainer = document.getElementById("messages");
-    var messageForm = document.querySelector('form#post-message');
-    var formUsername = document.querySelector("input[name=username]");
-    var formMessage  = document.querySelector("input[name=message]");
-    var socket = io.connect();
+    var listContainer      = document.getElementById("messages");
+    var messageForm        = document.querySelector('#post-message');
+    var nbClientsContainer = document.querySelector('#nb-clients');
+    var formUsername       = document.querySelector("[name=username]");
+    var formMessage        = document.querySelector("[name=message]");
+    var socket             = io.connect();
 
     var getMessage = function (message) {
         var listItem = document.createElement("p");
@@ -66,10 +75,15 @@
         }
     };
 
+    var getNbClients = function (nbClients) {
+        nbClientsContainer.innerText = nbClients;
+    };
+
     messageForm.addEventListener('submit', addMessage);
 
     socket.on('fetchMessages', getMessages);
     socket.on('fetchNewMessage', getMessage);
+    socket.on('fetchNbClients', getNbClients);
 </script>
 </body>
 </html>
