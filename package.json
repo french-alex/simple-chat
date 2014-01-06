@@ -18,6 +18,7 @@
   "readmeFilename": "README.md",
   "gitHead": "0a77555dbc1ed6b5c5a2477d1ad017d17e946822",
   "dependencies": {
-    "sse": "0.0.5"
+    "sse": "0.0.5",
+    "socket.io": "~0.9.16"
   }
 }

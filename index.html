@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Webchat example</title>
+
+    <style>
+        #container {
+            width: 600px;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
 <div id="container">
@@ -15,10 +22,8 @@
             <legend>Post your message</legend>
 
             <form action="." method="get" id="post-message">
-                <p><label>Username <input type="text" name="username"/></label></p>
-
+                <p><label>Username <input type="text" name="username" value="Guest"/></label></p>
                 <p><label>Message <input type="text" name="message"/></label></p>
-
                 <p><input type="submit" value="Post"/></p>
             </form>
         </fieldset>
@@ -27,58 +32,44 @@
     </section>
 </div>
 
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
-    var url = ".";
-    var async = true;
     var listContainer = document.getElementById("messages");
     var messageForm = document.querySelector('form#post-message');
-    var postLink = document.querySelector('form#post-message input[type=submit]');
-    var username = document.querySelector("input[name=username]");
-    var message = document.querySelector("input[name=message]");
+    var formUsername = document.querySelector("input[name=username]");
+    var formMessage  = document.querySelector("input[name=message]");
+    var socket = io.connect();
 
-    // XHR init
-    var xhr = null;
-    if (window.XMLHttpRequest) {
-        xhr = new XMLHttpRequest();
-    } else if (window.ActiveXObject) {
-        // code for IE6, IE5
-        xhr = new ActiveXObject("Microsoft.XMLHTTP");
-    } else {
-        alert('Perhaps your browser does not support XMLHttpRequest?');
-    }
+    var getMessage = function (message) {
+        var listItem = document.createElement("p");
+        listItem.innerText = message.username + ": " + message.message;
 
-    var getMessages = function (result) {
-        var messages = JSON.parse(result);
+        listContainer.insertBefore(listItem, listContainer.firstChild);
+    };
 
-        listContainer.innerHTML = ""; // clear the list
-
+    var getMessages = function (messages) {
         for (var i = 0; i < messages.length; i++) {
-            var listItem = document.createElement("p");
-            listItem.innerText = messages[i].username + ": " + messages[i].message;
-
-            listContainer.appendChild(listItem);
+            getMessage(messages[i]);
         }
     };
 
     var addMessage = function (event) {
         event.preventDefault();
 
-        xhr.open('POST', url + "/messages", async);
-        xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
-        xhr.send("{'username': '"+ username.value +"', 'message': '"+ message.value +"'}");
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) { // success
-                message.value = "";
-            }
-        };
+        if (formMessage.value != "") {
+                var newMessage = { 'username' : formUsername.value, 'message' : formMessage.value };
+                socket.emit('newMessage', newMessage);
+
+                getMessage(newMessage);
+
+                formMessage.value = "";
+        }
     };
 
-    postLink.addEventListener('click', addMessage);
+    messageForm.addEventListener('submit', addMessage);
 
-    var es = new EventSource("/sse");
-    es.onmessage = function (event) {
-        getMessages(event.data);
-    };
+    socket.on('fetchMessages', getMessages);
+    socket.on('fetchNewMessage', getMessage);
 </script>
 </body>
 </html>
