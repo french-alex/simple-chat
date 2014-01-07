@@ -51,7 +51,7 @@
 
     var getMessage = function (message) {
         var listItem = document.createElement("p");
-        listItem.innerText = message.username + ": " + message.message;
+        listItem.textContent = message.username + ": " + message.message;
 
         listContainer.insertBefore(listItem, listContainer.firstChild);
     };
@@ -76,7 +76,7 @@
     };
 
     var getNbClients = function (nbClients) {
-        nbClientsContainer.innerText = nbClients;
+        nbClientsContainer.textContent = nbClients;
     };
 
     messageForm.addEventListener('submit', addMessage);
