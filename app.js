@@ -1,11 +1,11 @@
-var port     = 1337;
-var title    = 'Webchat';
-var messages = [{'username': 'Lucas Courot', 'message': 'Hello world!'}];
-
 var http      = require('http');
 var url       = require('url');
 var fs        = require('fs');
 var io        = require('socket.io');
+
+var port      = 1337;
+var title     = 'Webchat';
+var messages  = [{'username': 'Lucas Courot', 'message': 'Hello world!'}];
 var nbClients = 0;
 
 var server = http.createServer(function (request, response) {
